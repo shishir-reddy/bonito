@@ -77,7 +77,7 @@ class Trainer:
         save_optim_every=10, grad_accum_split=1
     ):
         # Change device to TPU
-        device = dev = xm.xla_device()
+        device = xm.xla_device()
 
         self.model = model.to(device)
         self.device = device

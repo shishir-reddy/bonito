@@ -17,6 +17,7 @@ from bonito.training import load_state, Trainer
 
 import toml
 import torch
+import torch_xla.core.xla_model as xm
 import numpy as np
 from torch.utils.data import DataLoader
 
@@ -30,8 +31,12 @@ def main(args):
         exit(1)
 
     init(args.seed, args.device, (not args.nondeterministic))
-    device = torch.device(args.device)
 
+    # Change device to TPU
+    # device = torch.device(args.device)
+    device = xm.xla_device()
+
+    # Training Data Load
     print("[loading data]")
     try:
         train_loader_kwargs, valid_loader_kwargs = load_numpy(
