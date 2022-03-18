@@ -19,6 +19,7 @@ import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
 import torch.cuda.amp as amp
+import torch_xla.core.xla_model as xm
 
 
 def load_state(dirname, device, model, optim=None):
@@ -75,12 +76,19 @@ class Trainer:
         use_amp=True, lr_scheduler_fn=None, restore_optim=False,
         save_optim_every=10, grad_accum_split=1
     ):
+        # Change device to TPU
+        device = dev = xm.xla_device()
+
         self.model = model.to(device)
         self.device = device
         self.train_loader = train_loader
         self.valid_loader = valid_loader
         self.criterion = criterion or model.loss
-        self.use_amp = use_amp
+
+        # Never use amp
+        # self.use_amp = use_amp
+        self.use_amp = False
+        
         self.lr_scheduler_fn = lr_scheduler_fn or linear_warmup_cosine_decay()
         self.restore_optim = restore_optim
         self.save_optim_every = save_optim_every
