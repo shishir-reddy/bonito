@@ -56,6 +56,7 @@ def main(args):
     train_loader = DataLoader(**loader_kwargs, **train_loader_kwargs)
     valid_loader = DataLoader(**loader_kwargs, **valid_loader_kwargs)
 
+    
     if not args.pretrained:
         config = toml.load(args.config)
     else:

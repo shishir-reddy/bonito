@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 
 import toml
 import torch
+import torch_xla.core.xla_model as xm
 import koi.lstm
 import parasail
 import numpy as np
@@ -50,7 +51,7 @@ def init(seed, device, deterministic=True):
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.deterministic = deterministic
     torch.backends.cudnn.benchmark = (not deterministic)
-    assert(torch.cuda.is_available())
+    # assert(torch.cuda.is_available())
 
 
 def permute(x, input_layout, output_layout):
@@ -251,7 +252,7 @@ def match_names(state_dict, model):
     return OrderedDict([(k, remap[k]) for k in state_dict.keys()])
 
 
-def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsize=None, overlap=None, quantize=False, use_koi=False):
+def load_model(dirname, device, weights=None, half=True, chunksize=None, batchsize=None, overlap=None, quantize=False, use_koi=False):
     """
     Load a model from disk
     """
@@ -264,7 +265,10 @@ def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsi
             raise FileNotFoundError("no model weights found in '%s'" % dirname)
         weights = max([int(re.sub(".*_([0-9]+).tar", "\\1", w)) for w in weight_files])
 
-    device = torch.device(device)
+    # Change device to TPU
+    device = xm.xla_device()
+    # device = torch.device(device)
+
     config = toml.load(os.path.join(dirname, 'config.toml'))
     weights = os.path.join(dirname, 'weights_%s.tar' % weights)
 
@@ -279,6 +283,7 @@ def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsi
 
     Model = load_symbol(config, "Model")
     model = Model(config)
+    
 
     if config["model"]["package"] == "bonito.crf" and use_koi:
         model.encoder = koi.lstm.update_graph(
