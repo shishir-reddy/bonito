@@ -295,7 +295,7 @@ def load_model(dirname, device, weights=None, half=True, chunksize=None, batchsi
         )
 
     state_dict_32 = torch.load(weights, map_location=torch.device('cpu'))
-    print(state_dict_32)
+    print(state_dict_32, file=sys.stdout)
     state_dict = torch.load(weights, map_location=device)
     state_dict = {k2: state_dict[k1] for k1, k2 in match_names(state_dict, model).items()}
     new_state_dict = OrderedDict()
