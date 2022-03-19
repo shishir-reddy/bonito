@@ -293,10 +293,10 @@ def load_model(dirname, device, weights=None, half=True, chunksize=None, batchsi
         model.encoder = koi.lstm.update_graph(
             model.encoder, batchsize=batchsize, chunksize=chunksize // model.stride, quantize=quantize
         )
-
-    state_dict_32 = torch.load(weights, map_location=torch.device('cpu'))
-    print(state_dict_32, 'Hello?')
-    state_dict = torch.load(weights, map_location=device)
+    
+    # state_dict_32 = torch.load(weights, map_location=torch.device('cpu'))
+    # state_dict = torch.load(weights, map_location=device)
+    torch.load(weights, map_location=torch.device('cpu'))
     state_dict = {k2: state_dict[k1] for k1, k2 in match_names(state_dict, model).items()}
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
