@@ -252,7 +252,7 @@ def match_names(state_dict, model):
     return OrderedDict([(k, remap[k]) for k in state_dict.keys()])
 
 
-def load_model(dirname, device, weights=None, half=True, chunksize=None, batchsize=None, overlap=None, quantize=False, use_koi=False):
+def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsize=None, overlap=None, quantize=False, use_koi=False):
     """
     Load a model from disk
     """
@@ -284,19 +284,19 @@ def load_model(dirname, device, weights=None, half=True, chunksize=None, batchsi
     Model = load_symbol(config, "Model")
     model = Model(config)
 
-    if half is None:
-        half = half_supported()
+    # if half is None:
+    #     half = half_supported()
 
-    if half: model = model.half()
+    # if half: model = model.half()
     
     if config["model"]["package"] == "bonito.crf" and use_koi:
         model.encoder = koi.lstm.update_graph(
             model.encoder, batchsize=batchsize, chunksize=chunksize // model.stride, quantize=quantize
         )
-    
+
     # state_dict_32 = torch.load(weights, map_location=torch.device('cpu'))
     # state_dict = torch.load(weights, map_location=device)
-    torch.load(weights, map_location=torch.device('cpu'))
+    state_dict = torch.load(weights, map_location=torch.device('cpu'))
     state_dict = {k2: state_dict[k1] for k1, k2 in match_names(state_dict, model).items()}
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
@@ -305,10 +305,10 @@ def load_model(dirname, device, weights=None, half=True, chunksize=None, batchsi
 
     model.load_state_dict(new_state_dict)
 
-    # if half is None:
-    #     half = half_supported()
+    if half is None:
+        half = half_supported()
 
-    # if half: model = model.half()
+    if half: model = model.half()
     model.eval()
     model.to(device)
     return model
