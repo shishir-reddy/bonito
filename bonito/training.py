@@ -118,6 +118,8 @@ class Trainer:
 
         self.scaler.unscale_(self.optimizer)
         grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=2.0).item()
+
+        # self.optimizer.step()
         self.scaler.step(self.optimizer)
 
         # Try xla mark
@@ -130,6 +132,8 @@ class Trainer:
         t0 = perf_counter()
         chunks = 0
         self.model.train()
+
+        print("Starting training\n")
 
         progress_bar = tqdm(
             total=len(self.train_loader), desc='[0/{}]'.format(len(self.train_loader.sampler)),
