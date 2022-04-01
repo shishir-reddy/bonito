@@ -105,7 +105,7 @@ class Trainer:
             for data_, targets_, lengths_ in zip(*map(lambda t: t.chunk(self.grad_accum_split, dim=0), batch)):
                 data_, targets_, lengths_ = data_.to(self.device), targets_.to(self.device), lengths_.to(self.device)
                 print("Successfully mapped to TPU")
-                print(next(self.model.parameters()).device)
+                print("Model device: ", next(self.model.parameters()).device)
 
                 scores_ = self.model(data_)
                 print("Successfully evaluated data")
