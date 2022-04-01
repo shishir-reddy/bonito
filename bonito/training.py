@@ -119,6 +119,9 @@ class Trainer:
         self.scaler.unscale_(self.optimizer)
         grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=2.0).item()
         self.scaler.step(self.optimizer)
+
+        # Try xla mark
+        xm.mark_step()
         self.scaler.update()
 
         return losses, grad_norm
