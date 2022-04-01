@@ -39,7 +39,7 @@ def main(args):
             overlap=args.overlap,
             batchsize=args.batchsize,
             quantize=args.quantize,
-            use_koi=True,
+            use_koi=False,
         )
     except FileNotFoundError:
         sys.stderr.write(f"> error: failed to load {args.model_directory}\n")
