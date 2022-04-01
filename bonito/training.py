@@ -101,12 +101,19 @@ class Trainer:
 
         losses = None
         with amp.autocast(enabled=self.use_amp):
+            print("Started loop")
             for data_, targets_, lengths_ in zip(*map(lambda t: t.chunk(self.grad_accum_split, dim=0), batch)):
                 data_, targets_, lengths_ = data_.to(self.device), targets_.to(self.device), lengths_.to(self.device)
-                scores_ = self.model(data_)
-                losses_ = self.criterion(scores_, targets_, lengths_)
+                print("Successfully mapped to TPU")
 
+                scores_ = self.model(data_)
+                print("Successfully evaluated data")
+
+                losses_ = self.criterion(scores_, targets_, lengths_)
+                print("Successfully calculated loss")
+                
                 if not isinstance(losses_, dict): losses_ = {'loss': losses_}
+                print("Losses: ", losses_)
 
                 total_loss = losses_.get('total_loss', losses_['loss']) / self.grad_accum_split
                 self.scaler.scale(total_loss).backward()
@@ -133,8 +140,6 @@ class Trainer:
         chunks = 0
         self.model.train()
 
-        print("Starting training\n")
-
         progress_bar = tqdm(
             total=len(self.train_loader), desc='[0/{}]'.format(len(self.train_loader.sampler)),
             ascii=True, leave=True, ncols=100, bar_format='{l_bar}{bar}| [{elapsed}{postfix}]'
@@ -147,6 +152,7 @@ class Trainer:
 
                 chunks += batch[0].shape[0]
 
+                print("Starting first step")
                 losses, grad_norm = self.train_one_step(batch)
 
                 smoothed_loss = losses['loss'] if smoothed_loss is None else (0.01 * losses['loss'] + 0.99 * smoothed_loss)
