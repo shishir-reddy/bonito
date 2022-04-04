@@ -116,13 +116,18 @@ class CTC_CRF(SequenceDist):
         return stay_scores, move_scores
 
     def ctc_loss(self, scores, targets, target_lengths, loss_clip=None, reduction='mean', normalise_scores=True):
+        print("Starting CTC loss")
         if normalise_scores:
             scores = self.normalise(scores)
         stay_scores, move_scores = self.prepare_ctc_scores(scores, targets)
+        print("Successfully Prepared CTC scores")
         logz = logZ_cu(stay_scores, move_scores, target_lengths + 1 - self.state_len)
+        print("LogZ Success")
         loss = - (logz / target_lengths)
         if loss_clip:
+            print("Starting loss clip")
             loss = torch.clamp(loss, 0.0, loss_clip)
+            print("Loss clip success")
         if reduction == 'mean':
             return loss.mean()
         elif reduction in ('none', None):
