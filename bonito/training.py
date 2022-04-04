@@ -108,9 +108,12 @@ class Trainer:
                 print("Model device: ", next(self.model.parameters()).device)
 
                 # Model struggles on evaluation. Debug pipeline
+                print("Starting Evaluation")
                 scores_ = self.model(data_)
                 print("Successfully evaluated data")
 
+                print("Starting loss calculation")
+                print(self.criterion)
                 losses_ = self.criterion(scores_, targets_, lengths_)
                 print("Successfully calculated loss")
                 
