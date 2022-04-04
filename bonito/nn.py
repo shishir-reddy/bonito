@@ -181,8 +181,9 @@ class RNNWrapper(Module):
         print('Attempting RNNWrapper Forward')
         if self.reverse: x = x.flip(0)
         y, h = self.rnn(x)
+        print('RNNWrapper Forward x-flip Successful', end=' ')
         if self.reverse: y = y.flip(0)
-        print('RNNWrapper Forward Successful')
+        print('RNNWrapper Forward y-flip Successful')
         return y
 
     def init_biases(self, types=('bias_ih',)):
