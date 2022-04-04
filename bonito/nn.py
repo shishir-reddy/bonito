@@ -172,6 +172,7 @@ class RNNWrapper(Module):
         if reverse and bidirectional:
             raise Exception("'reverse' and 'bidirectional' should not both be set to True")
         self.reverse = reverse
+        print(rnn_type)
         self.rnn = rnn_type(*args, bidirectional=bidirectional, **kwargs)
         self.init_orthogonal(orthogonal_weight_init)
         self.init_biases()
