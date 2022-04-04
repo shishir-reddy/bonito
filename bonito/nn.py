@@ -178,9 +178,11 @@ class RNNWrapper(Module):
         if disable_state_bias: self.disable_state_bias()
 
     def forward(self, x):
+        print('Attempting RNNWrapper Forward')
         if self.reverse: x = x.flip(0)
         y, h = self.rnn(x)
         if self.reverse: y = y.flip(0)
+        print('RNNWrapper Forward Successful')
         return y
 
     def init_biases(self, types=('bias_ih',)):
