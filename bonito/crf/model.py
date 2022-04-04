@@ -39,13 +39,18 @@ class CTC_CRF(SequenceDist):
         return len(self.alphabet) * self.n_base**(self.state_len)
 
     def logZ(self, scores, S:semiring=Log):
+        print("Beginning LogZ")
         T, N, _ = scores.shape
         Ms = scores.reshape(T, N, -1, len(self.alphabet))
         alpha_0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
         beta_T = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-        return logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
+        o = logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
+        print("Successfuly computed logz")
+        return o
+        # return logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
 
     def normalise(self, scores):
+        print("Normalizing scores")
         return (scores - self.logZ(scores)[:, None] / len(scores))
 
     def forward_scores(self, scores, S: semiring=Log):
@@ -121,6 +126,7 @@ class CTC_CRF(SequenceDist):
         print("Starting CTC loss")
         if normalise_scores:
             scores = self.normalise(scores)
+        print("Score normalization success")
         stay_scores, move_scores = self.prepare_ctc_scores(scores, targets)
         print("Successfully Prepared CTC scores")
         logz = logZ_cu(stay_scores, move_scores, target_lengths + 1 - self.state_len)
