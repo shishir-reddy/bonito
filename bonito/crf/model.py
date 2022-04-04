@@ -163,7 +163,11 @@ class SeqdistModel(Module):
         self.alphabet = seqdist.alphabet
 
     def forward(self, x):
-        return self.encoder(x)
+        print("Attempting forward")
+        f = self.encoder(x)
+        print("Completed forward")
+        return f
+        # return self.encoder(x)
 
     def decode_batch(self, x):
         scores = self.seqdist.posteriors(x.to(torch.float32)) + 1e-8

@@ -107,6 +107,7 @@ class Trainer:
                 print("Successfully mapped to TPU")
                 print("Model device: ", next(self.model.parameters()).device)
 
+                # Model struggles on evaluation. Debug pipeline
                 scores_ = self.model(data_)
                 print("Successfully evaluated data")
 
