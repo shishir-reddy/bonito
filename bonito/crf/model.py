@@ -20,6 +20,58 @@ def get_stride(m):
         return int(np.prod([get_stride(x) for x in m]))
     return 1
 
+def logZ_fwd_cpu(Ms, idx, v0, vT, S):
+    T, N, C, NZ = Ms.shape
+    Ms_grad = torch.zeros(T, N, C, NZ)
+
+    a = v0
+    for t in range(T):
+        s = S.mul(a[:, idx], Ms[t])
+        a = S.sum(s, -1)
+        Ms_grad[t] = s
+    return S.sum(a + vT, dim=1), Ms_grad
+
+
+def logZ_bwd_cpu(Ms, idx, vT, S, K=1):
+    assert(K == 1)
+    T, N, C, NZ = Ms.shape
+    Ms = Ms.reshape(T, N, -1)
+    idx_T = idx.flatten().argsort().to(dtype=torch.long).reshape(C, NZ)
+
+    betas = torch.ones(T + 1, N, C)
+
+    a = vT
+    betas[T] = a
+    for t in reversed(range(T)):
+        s = S.mul(a[:, idx_T // NZ], Ms[t, :, idx_T])
+        a = S.sum(s, -1)
+        betas[t] = a
+    return betas
+
+'''
+Add in OPENVINO LogZ CPU implementation to bypass CUDA reqs
+'''
+class _LogZ(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, Ms, idx, v0, vT, S:semiring):
+        idx = idx.to(dtype=torch.long, device=Ms.device)
+        logZ, Ms_grad = logZ_fwd_cpu(Ms, idx, v0, vT, S)
+        ctx.save_for_backward(Ms_grad, Ms, idx, vT)
+        ctx.semiring = S
+        return logZ
+
+    @staticmethod
+    def backward(ctx, grad):
+        Ms_grad, Ms, idx, vT = ctx.saved_tensors
+        S = ctx.semiring
+        T, N, C, NZ = Ms.shape
+        betas = logZ_bwd_cpu(Ms, idx, vT, S)
+        Ms_grad = S.mul(Ms_grad, betas[1:,:,:,None])
+        Ms_grad = S.dsum(Ms_grad.reshape(T, N, -1), dim=2).reshape(T, N, C, NZ)
+        return grad[None, :, None, None] * Ms_grad, None, None, None, None, None
+
+def sparse_logZ(Ms, idx, v0, vT, S:semiring=Log):
+    return _LogZ.apply(Ms, idx, v0, vT, S)
 
 class CTC_CRF(SequenceDist):
 
@@ -44,9 +96,9 @@ class CTC_CRF(SequenceDist):
         Ms = scores.reshape(T, N, -1, len(self.alphabet))
         alpha_0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
         beta_T = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-        o = logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
-        print("Successfuly computed logz")
-        return o
+
+        # Implement CPU LogZ
+        return sparse_logZ(Ms, self.idx, alpha_0, beta_T, S)
         # return logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
 
     def normalise(self, scores):
@@ -63,7 +115,10 @@ class CTC_CRF(SequenceDist):
         T, N, _ = scores.shape
         Ms = scores.reshape(T, N, -1, self.n_base + 1)
         beta_T = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-        return bwd_scores_cu_sparse(Ms, self.idx, beta_T, S, K=1)
+
+        # Add OpenVino CPU implementation
+        return logZ_bwd_cpu(Ms, self.idx, beta_T, S, K=1)
+        # return bwd_scores_cu_sparse(Ms, self.idx, beta_T, S, K=1)
 
     def compute_transition_probs(self, scores, betas):
         T, N, C = scores.shape
@@ -108,8 +163,6 @@ class CTC_CRF(SequenceDist):
         print("Starting CTC score preparation")
         # convert from CTC targets (with blank=0) to zero indexed
         targets = torch.clamp(targets - 1, 0)
-
-        print("Score clamp success")
         T, N, C = scores.shape
         scores = scores.to(torch.float32)
         n = targets.size(1) - (self.state_len - 1)
