@@ -100,9 +100,11 @@ class CTC_CRF(SequenceDist):
         return seq.tobytes().decode()
 
     def prepare_ctc_scores(self, scores, targets):
+        print("Starting CTC score preparation")
         # convert from CTC targets (with blank=0) to zero indexed
         targets = torch.clamp(targets - 1, 0)
 
+        print("Score clamp success")
         T, N, C = scores.shape
         scores = scores.to(torch.float32)
         n = targets.size(1) - (self.state_len - 1)
