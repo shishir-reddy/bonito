@@ -15,6 +15,7 @@ def basecall(model, reads, beamsize=5, chunksize=0, overlap=0, batchsize=1, qsco
     """
     Basecalls a set of reads.
     """
+    print("Basecalling")
     chunks = (
         (read, chunk(torch.tensor(read.signal), chunksize, overlap)) for read in reads
     )
