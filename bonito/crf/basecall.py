@@ -34,16 +34,16 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         # scores = model(batch.to(dtype).to(device))
         scores = model(batch.to(device))
         if reverse:
-            sys.stderr.write("Starting reverse complement \n")
+            print("Starting reverse complement", file=sys.stderr)
             scores = model.seqdist.reverse_complement(scores)
-            sys.stderr.write("Completed reverse complement \n")
+            print("Completed reverse complement", file=sys.stderr)
         
-        sys.stderr.write("Starting beam search \n")
+        print("Starting beam search", file=sys.stderr)
         sequence, qstring, moves = beam_search(
             scores, beam_width=beam_width, beam_cut=beam_cut,
             scale=scale, offset=offset, blank_score=blank_score
         )
-        sys.stderr.write("Completed beam search\n")
+        print("Completed beam search", file=sys.stderr)
         return {
             'moves': moves,
             'qstring': qstring,
@@ -71,7 +71,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
 
     batches = thread_iter(batchify(chunks, batchsize=batchsize))
 
-    print("Scoring\n", file=sys.stderr)
+    print("Scoring", file=sys.stderr)
     scores = thread_iter(
         (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
     )
