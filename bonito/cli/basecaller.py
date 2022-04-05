@@ -133,11 +133,13 @@ def main(args):
     if aligner:
         results = align_map(aligner, results, n_thread=args.alignment_threads)
 
+    sys.stderr.write("Starting write \n")
     writer = ResultsWriter(
         fmt.mode, tqdm(results, desc="> calling", unit=" reads", leave=False),
         aligner=aligner, group_key=args.model_directory,
         ref_fn=args.reference, groups=groups,
     )
+    sys.stderr.write("Completed write \n")
 
     t0 = perf_counter()
     writer.start()
