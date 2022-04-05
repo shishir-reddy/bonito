@@ -10,6 +10,7 @@ from koi.ctc import logZ_cu, viterbi_alignments, logZ_cu_sparse, bwd_scores_cu_s
 
 from bonito.nn import Module, Convolution, LinearCRFEncoder, Serial, Permute, layers, from_dict
 
+from collections import namedtuple
 
 def get_stride(m):
     if hasattr(m, 'stride'):
@@ -20,58 +21,49 @@ def get_stride(m):
         return int(np.prod([get_stride(x) for x in m]))
     return 1
 
-def logZ_fwd_cpu(Ms, idx, v0, vT, S):
-    T, N, C, NZ = Ms.shape
-    Ms_grad = torch.zeros(T, N, C, NZ)
+def grad(f, x):
+    x = x.detach().requires_grad_()
+    with torch.enable_grad():
+        y = f(x)
+    return torch.autograd.grad(y, x)[0].detach()
 
-    a = v0
+def max_grad(x, dim=0):
+    return torch.zeros_like(x).scatter_(dim, x.argmax(dim, True), 1.0)
+
+semiring = namedtuple('semiring', ('zero', 'one', 'mul', 'sum', 'dsum'))
+Log = semiring(zero=-1e38, one=0., mul=torch.add, sum=torch.logsumexp, dsum=torch.softmax)
+Max = semiring(zero=-1e38, one=0., mul=torch.add, sum=(lambda x, dim=0: torch.max(x, dim=dim)[0]), dsum=max_grad)
+
+def scan(Ms, idx, v0, S:semiring=Log):
+    T, N, C, NZ = Ms.shape
+    alpha = Ms.new_full((T + 1, N, C), S.zero)
+    alpha[0] = v0
     for t in range(T):
-        s = S.mul(a[:, idx], Ms[t])
-        a = S.sum(s, -1)
-        Ms_grad[t] = s
-    return S.sum(a + vT, dim=1), Ms_grad
-
-
-def logZ_bwd_cpu(Ms, idx, vT, S, K=1):
-    assert(K == 1)
-    T, N, C, NZ = Ms.shape
-    Ms = Ms.reshape(T, N, -1)
-    idx_T = idx.flatten().argsort().to(dtype=torch.long).reshape(C, NZ)
-
-    betas = torch.ones(T + 1, N, C)
-
-    a = vT
-    betas[T] = a
-    for t in reversed(range(T)):
-        s = S.mul(a[:, idx_T // NZ], Ms[t, :, idx_T])
-        a = S.sum(s, -1)
-        betas[t] = a
-    return betas
-
+        alpha[t+1] = S.sum(S.mul(Ms[t], alpha[t, :, idx]), dim=-1)
+    return alpha
 '''
 Add in OPENVINO LogZ CPU implementation to bypass CUDA reqs
 '''
-class _LogZ(torch.autograd.Function):
+class LogZ(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, Ms, idx, v0, vT, S:semiring):
-        idx = idx.to(dtype=torch.long, device=Ms.device)
-        logZ, Ms_grad = logZ_fwd_cpu(Ms, idx, v0, vT, S)
-        ctx.save_for_backward(Ms_grad, Ms, idx, vT)
-        ctx.semiring = S
-        return logZ
+    def forward(ctx, Ms, idx, v0, vT, scan, S:semiring):
+        alpha = scan(Ms, idx, v0, S)
+        ctx.save_for_backward(alpha, Ms, idx, vT)
+        ctx.semiring, ctx.scan = S, scan
+        return S.sum(S.mul(alpha[-1], vT), dim=1)
 
     @staticmethod
     def backward(ctx, grad):
-        Ms_grad, Ms, idx, vT = ctx.saved_tensors
-        S = ctx.semiring
+        alpha, Ms, idx, vT = ctx.saved_tensors
+        S, scan = ctx.semiring, ctx.scan
         T, N, C, NZ = Ms.shape
-        betas = logZ_bwd_cpu(Ms, idx, vT, S)
-        Ms_grad = S.mul(Ms_grad, betas[1:,:,:,None])
-        Ms_grad = S.dsum(Ms_grad.reshape(T, N, -1), dim=2).reshape(T, N, C, NZ)
-        return grad[None, :, None, None] * Ms_grad, None, None, None, None, None
-
-def sparse_logZ(Ms, idx, v0, vT, S:semiring=Log):
-    return _LogZ.apply(Ms, idx, v0, vT, S)
+        idx_T = idx.flatten().argsort().reshape(*idx.shape)
+        Ms_T = Ms.reshape(T, N, -1)[:, :, idx_T]
+        idx_T = torch.div(idx_T, NZ, rounding_mode='floor')
+        beta = scan(Ms_T.flip(0), idx_T, vT, S)
+        g = S.mul(S.mul(Ms.reshape(T, N, -1), alpha[:-1, :, idx.flatten()]).reshape(T, N, C, NZ), beta[:-1, :, :, None].flip(0))
+        g = S.dsum(g.reshape(T, N, -1), dim=2).reshape(T, N, C, NZ)
+        return grad[None, :, None, None] * g, None, None, None, None, None
 
 class CTC_CRF(SequenceDist):
 
@@ -93,12 +85,10 @@ class CTC_CRF(SequenceDist):
     def logZ(self, scores, S:semiring=Log):
         print("Beginning LogZ")
         T, N, _ = scores.shape
-        Ms = scores.reshape(T, N, -1, len(self.alphabet))
-        alpha_0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-        beta_T = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-
-        # Implement CPU LogZ
-        return sparse_logZ(Ms, self.idx, alpha_0, beta_T, S)
+        Ms = scores.reshape(T, N, -1, self.n_base + 1)
+        v0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
+        vT = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
+        return LogZ.apply(Ms, self.idx.to(torch.int64), v0, vT, scan, S)
         # return logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
 
     def normalise(self, scores):
@@ -108,16 +98,19 @@ class CTC_CRF(SequenceDist):
     def forward_scores(self, scores, S: semiring=Log):
         T, N, _ = scores.shape
         Ms = scores.reshape(T, N, -1, self.n_base + 1)
-        alpha_0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-        return fwd_scores_cu_sparse(Ms, self.idx, alpha_0, S, K=1)
+        v0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
+        return scan(Ms, self.idx.to(torch.int64), v0, S)
+
+        # return fwd_scores_cu_sparse(Ms, self.idx, alpha_0, S, K=1)
 
     def backward_scores(self, scores, S: semiring=Log):
         T, N, _ = scores.shape
-        Ms = scores.reshape(T, N, -1, self.n_base + 1)
-        beta_T = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-
-        # Add OpenVino CPU implementation
-        return logZ_bwd_cpu(Ms, self.idx, beta_T, S, K=1)
+        vT = scores.new_full((N, self.n_base**(self.state_len)), S.one)
+        idx_T = self.idx.flatten().argsort().reshape(*self.idx.shape)
+        Ms_T = scores[:, :, idx_T]
+        idx_T = torch.div(idx_T, self.n_base + 1, rounding_mode='floor')
+        return scan(Ms_T.flip(0), idx_T.to(torch.int64), vT, S).flip(0)
+        
         # return bwd_scores_cu_sparse(Ms, self.idx, beta_T, S, K=1)
 
     def compute_transition_probs(self, scores, betas):
