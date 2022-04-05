@@ -3,6 +3,7 @@ Bonito CRF basecalling
 """
 
 import torch
+import torch_xla.core.xla_model as xm
 import numpy as np
 from koi.decode import beam_search, to_str
 
