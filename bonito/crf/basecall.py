@@ -71,9 +71,9 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
         for read in reads
     )
 
-    # print("Chunks", file=sys.stderr)
-    # for read in reads:
-    #     print("iterating", file=sys.stderr)
+    print("Chunks", file=sys.stderr)
+    for read in reads:
+        print((read, 0, len(read.signal)), chunksize, overlap, file=sys.stderr)
 
     batches = thread_iter(batchify(chunks, batchsize=batchsize))
 
