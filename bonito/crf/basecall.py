@@ -70,10 +70,12 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     """
     Basecalls a set of reads.
     """
+    print("This should be written", file=o)
     chunks = thread_iter(
         ((read, 0, len(read.signal)), chunk(torch.from_numpy(read.signal), chunksize, overlap))
         for read in reads
     )
+    print(chunks, file=o)
 
     # print("Chunks", file=sys.stderr)
     # for read in reads:
