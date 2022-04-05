@@ -256,7 +256,7 @@ def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsi
     """
     Load a model from disk
     """
-    print("Starting model loading")
+    sys.stderr.write("Starting model loading\n")
     if not os.path.isdir(dirname) and os.path.isdir(os.path.join(__models__, dirname)):
         dirname = os.path.join(__models__, dirname)
 
@@ -316,7 +316,7 @@ def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsi
     if half: model = model.half()
     model.eval()
     model.to(device)
-    print("Successfully loaded model")
+    sys.stderr.write("Successfully loaded model\n")
     return model
 
 

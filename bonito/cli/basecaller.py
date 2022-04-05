@@ -31,7 +31,7 @@ def main(args):
 
     sys.stderr.write(f"> loading model {args.model_directory}\n")
     try:
-        sys.stderr.write("Loading Model")
+        sys.stderr.write("Loading Model\n")
         model = load_model(
             args.model_directory,
             args.device,
