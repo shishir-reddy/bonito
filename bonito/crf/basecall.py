@@ -43,7 +43,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
             scores, beam_width=beam_width, beam_cut=beam_cut,
             scale=scale, offset=offset, blank_score=blank_score
         )
-        sys.stderr.write("Completed beam search \n")
+        sys.stderr.write("Completed beam search\n")
         return {
             'moves': moves,
             'qstring': qstring,
@@ -71,6 +71,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
 
     batches = thread_iter(batchify(chunks, batchsize=batchsize))
 
+    print("Scoring")
     scores = thread_iter(
         (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
     )
