@@ -10,12 +10,15 @@ from bonito.multiprocessing import process_map
 from bonito.util import mean_qscore_from_qstring
 from bonito.util import chunk, stitch, batchify, unbatchify, permute
 
+import sys
+
 
 def basecall(model, reads, beamsize=5, chunksize=0, overlap=0, batchsize=1, qscores=False, reverse=None):
     """
     Basecalls a set of reads.
     """
-    print("Basecalling")
+    sys.stderr.write("Starting ctc basecall\n")
+    print("Basecalling\n")
     chunks = (
         (read, chunk(torch.tensor(read.signal), chunksize, overlap)) for read in reads
     )
