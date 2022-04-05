@@ -315,6 +315,7 @@ def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsi
     if half: model = model.half()
     model.eval()
     model.to(device)
+    print("Successfully loaded model")
     return model
 
 
