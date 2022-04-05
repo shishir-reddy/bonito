@@ -135,7 +135,7 @@ class Trainer:
         self.scaler.step(self.optimizer)
 
         # Try xla mark
-        xm.mark_step()
+        # xm.mark_step()
         self.scaler.update()
 
         return losses, grad_norm

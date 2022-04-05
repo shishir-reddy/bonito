@@ -6,11 +6,11 @@ import torch
 import numpy as np
 
 from koi.ctc import SequenceDist, Max, Log, semiring
-from koi.ctc import logZ_cu, viterbi_alignments, logZ_cu_sparse, bwd_scores_cu_sparse, fwd_scores_cu_sparse
+# from koi.ctc import logZ_cu, viterbi_alignments, logZ_cu_sparse, bwd_scores_cu_sparse, fwd_scores_cu_sparse
 
 from bonito.nn import Module, Convolution, LinearCRFEncoder, Serial, Permute, layers, from_dict
 
-from collections import namedtuple
+# from collections import namedtuple
 
 def get_stride(m):
     if hasattr(m, 'stride'):
@@ -30,10 +30,6 @@ def grad(f, x):
 def max_grad(x, dim=0):
     return torch.zeros_like(x).scatter_(dim, x.argmax(dim, True), 1.0)
 
-semiring = namedtuple('semiring', ('zero', 'one', 'mul', 'sum', 'dsum'))
-Log = semiring(zero=-1e38, one=0., mul=torch.add, sum=torch.logsumexp, dsum=torch.softmax)
-Max = semiring(zero=-1e38, one=0., mul=torch.add, sum=(lambda x, dim=0: torch.max(x, dim=dim)[0]), dsum=max_grad)
-
 def scan(Ms, idx, v0, S:semiring=Log):
     T, N, C, NZ = Ms.shape
     alpha = Ms.new_full((T + 1, N, C), S.zero)
@@ -41,6 +37,15 @@ def scan(Ms, idx, v0, S:semiring=Log):
     for t in range(T):
         alpha[t+1] = S.sum(S.mul(Ms[t], alpha[t, :, idx]), dim=-1)
     return alpha
+
+# Custom viterbi alignments
+def viterbi_alignments(stay_scores, move_scores, target_lengths):
+    target_lengths = target_lengths.to(stay_scores.device)
+    stay_scores, move_scores = stay_scores.detach().requires_grad_(), move_scores.detach().requires_grad_()
+    LogZ.apply(stay_scores, move_scores, target_lengths, Max).sum().backward()
+    alignments = stay_scores.grad.clone()
+    alignments[:, :, :-1] += move_scores.grad
+    return alignments
 '''
 Add in OPENVINO LogZ CPU implementation to bypass CUDA reqs
 '''
@@ -177,7 +182,7 @@ class CTC_CRF(SequenceDist):
         print("Score normalization success")
         stay_scores, move_scores = self.prepare_ctc_scores(scores, targets)
         print("Successfully Prepared CTC scores")
-        logz = logZ_cu(stay_scores, move_scores, target_lengths + 1 - self.state_len)
+        logz = LogZ.apply(stay_scores, move_scores, target_lengths + 1 - self.state_len)
         print("LogZ Success")
         loss = - (logz / target_lengths)
         if loss_clip:
@@ -228,9 +233,9 @@ class SeqdistModel(Module):
         self.alphabet = seqdist.alphabet
 
     def forward(self, x):
-        print("Attempting forward")
+        print("Attempting RNN encoder forward")
         f = self.encoder(x)
-        print("Completed forward")
+        print("Completed RNN encoder forward")
         return f
         # return self.encoder(x)
 
