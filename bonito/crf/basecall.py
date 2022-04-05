@@ -30,6 +30,8 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     """
     Compute scores for model.
     """
+    o = open("/home/shishirizreddy/tpu-test/outfile.log", "a")
+    o.write('This should be written')
     print("Starting compute", file=o)
     with torch.inference_mode():
         # device = next(model.parameters()).device
