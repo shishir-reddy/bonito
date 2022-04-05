@@ -38,14 +38,6 @@ def scan(Ms, idx, v0, S:semiring=Log):
         alpha[t+1] = S.sum(S.mul(Ms[t], alpha[t, :, idx]), dim=-1)
     return alpha
 
-# Custom viterbi alignments
-def viterbi_alignments(stay_scores, move_scores, target_lengths):
-    target_lengths = target_lengths.to(stay_scores.device)
-    stay_scores, move_scores = stay_scores.detach().requires_grad_(), move_scores.detach().requires_grad_()
-    LogZ.apply(stay_scores, move_scores, target_lengths, Max).sum().backward()
-    alignments = stay_scores.grad.clone()
-    alignments[:, :, :-1] += move_scores.grad
-    return alignments
 '''
 Add in OPENVINO LogZ CPU implementation to bypass CUDA reqs
 '''
@@ -134,7 +126,6 @@ class CTC_CRF(SequenceDist):
         return trans_probs, init_state_probs
 
     def reverse_complement(self, scores):
-        print("Starting reverse complement")
         T, N, C = scores.shape
         expand_dims = T, N, *(self.n_base for _ in range(self.state_len)), self.n_base + 1
         scores = scores.reshape(*expand_dims)
@@ -146,7 +137,6 @@ class CTC_CRF(SequenceDist):
             self.state_len +2,
             self.state_len + 1).reshape(T, N, -1, self.n_base), [0, 2, 3]
         )
-        print("Finished reverse complement")
         return torch.cat([blanks, emissions], dim=-1).reshape(T, N, -1)
 
     def viterbi(self, scores):
@@ -160,7 +150,6 @@ class CTC_CRF(SequenceDist):
         return seq.tobytes().decode()
 
     def prepare_ctc_scores(self, scores, targets):
-        print("Starting CTC score preparation")
         # convert from CTC targets (with blank=0) to zero indexed
         targets = torch.clamp(targets - 1, 0)
         T, N, C = scores.shape
@@ -195,10 +184,19 @@ class CTC_CRF(SequenceDist):
             return loss
         else:
             raise ValueError('Unknown reduction type {}'.format(reduction))
+    
+    # Custom viterbi alignments
+    def viterbi_alignments(self, stay_scores, move_scores, target_lengths):
+        target_lengths = target_lengths.to(stay_scores.device)
+        stay_scores, move_scores = stay_scores.detach().requires_grad_(), move_scores.detach().requires_grad_()
+        LogZ.apply(stay_scores, move_scores, target_lengths, Max).sum().backward()
+        alignments = stay_scores.grad.clone()
+        alignments[:, :, :-1] += move_scores.grad
+        return alignments
 
     def ctc_viterbi_alignments(self, scores, targets, target_lengths):
         stay_scores, move_scores = self.prepare_ctc_scores(scores, targets)
-        return viterbi_alignments(stay_scores, move_scores, target_lengths + 1 - self.state_len)
+        return self.viterbi_alignments(stay_scores, move_scores, target_lengths + 1 - self.state_len)
 
 
 def conv(c_in, c_out, ks, stride=1, bias=False, activation=None):

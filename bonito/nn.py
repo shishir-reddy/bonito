@@ -148,11 +148,7 @@ class Permute(Module):
         self.dims = dims
 
     def forward(self, x):
-        print("Attempting Permute")
-        o = x.permute(*self.dims)
-        print("Permute Successful")
-        return o
-        # return x.permute(*self.dims)
+        return x.permute(*self.dims)
 
     def to_dict(self, include_weights=False):
         return {'dims': self.dims}
@@ -179,12 +175,9 @@ class RNNWrapper(Module):
 
     def forward(self, x):
         print(self.rnn)
-        print('Attempting RNNWrapper Forward')
         if self.reverse: x = x.flip(0)
         y, h = self.rnn(x)
-        print('RNNWrapper Forward x-flip Successful', end=' ')
         if self.reverse: y = y.flip(0)
-        print('RNNWrapper Forward y-flip Successful')
         return y
 
     def init_biases(self, types=('bias_ih',)):
