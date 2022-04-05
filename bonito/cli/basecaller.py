@@ -94,7 +94,7 @@ def main(args):
         )
     else:
         groups = []
-
+    
     reads = get_reads(
         args.reads_directory, n_proc=8, recursive=args.recursive,
         read_ids=column_to_set(args.read_ids), skip=args.skip,
@@ -117,12 +117,14 @@ def main(args):
     else:
         ResultsWriter = Writer
 
+    sys.stderr.write("Starting basecall \n")
     results = basecall(
         model, reads, reverse=args.revcomp,
         batchsize=model.config["basecaller"]["batchsize"],
         chunksize=model.config["basecaller"]["chunksize"],
         overlap=model.config["basecaller"]["overlap"]
     )
+    sys.stderr.write("Completed basecall \n")
 
     if mods_model is not None:
         results = process_itemmap(
