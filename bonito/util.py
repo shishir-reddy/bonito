@@ -306,8 +306,8 @@ def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsi
         name = k.replace('module.', '')
         new_state_dict[name] = v
 
-    xm.send_cpu_data_to_device(device, new_state_dict)
-    model.to(device)
+    # xm.send_cpu_data_to_device(device, new_state_dict)
+    # model.to(device)
     model.load_state_dict(new_state_dict)
 
     if half is None:
