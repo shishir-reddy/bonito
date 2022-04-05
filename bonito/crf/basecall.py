@@ -30,7 +30,6 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     """
     Compute scores for model.
     """
-    o = open("/home/shishirizreddy/tpu-test/outfile.log", "a")
     o.write('This should be written')
     print("Starting compute", file=o)
     with torch.inference_mode():
@@ -104,6 +103,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     # for read, attrs in results:
     #     print(read, fmt(model.stride, attrs), file=sys.stderr)
 
+    print("This should be written22", file=o)
     return thread_iter(
         (read, fmt(model.stride, attrs))
         for read, attrs in results
