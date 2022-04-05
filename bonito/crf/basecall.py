@@ -103,7 +103,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     # for read, attrs in results:
     #     print(read, fmt(model.stride, attrs), file=sys.stderr)
 
-    print("This should be written22", file=o)
+    o.write("This should be written22")
     return thread_iter(
         (read, fmt(model.stride, attrs))
         for read, attrs in results
