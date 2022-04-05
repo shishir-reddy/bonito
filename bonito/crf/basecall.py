@@ -75,7 +75,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
 
     print("Batches", file=sys.stderr)
     for read, batch in batches:
-        print((read, compute_scores(model, batch, reverse=reverse)), file=sys.stderr)
+        print(compute_scores(model, batch, reverse=reverse), file=sys.stderr)
 
     print("Scoring", file=sys.stderr)
     scores = thread_iter(
