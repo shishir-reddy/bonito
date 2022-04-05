@@ -52,6 +52,7 @@ def main(args):
     if args.verbose:
         sys.stderr.write(f"> model basecaller params: {model.config['basecaller']}\n")
 
+    sys.stderr.write(f"Loading {args.model_directory} basecall\n")
     basecall = load_symbol(args.model_directory, "basecall")
 
     mods_model = None
