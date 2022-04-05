@@ -110,7 +110,7 @@ class CTC_CRF(SequenceDist):
         Ms_T = scores[:, :, idx_T]
         idx_T = torch.div(idx_T, self.n_base + 1, rounding_mode='floor')
         return scan(Ms_T.flip(0), idx_T.to(torch.int64), vT, S).flip(0)
-        
+
         # return bwd_scores_cu_sparse(Ms, self.idx, beta_T, S, K=1)
 
     def compute_transition_probs(self, scores, betas):
@@ -129,6 +129,7 @@ class CTC_CRF(SequenceDist):
         return trans_probs, init_state_probs
 
     def reverse_complement(self, scores):
+        print("Starting reverse complement")
         T, N, C = scores.shape
         expand_dims = T, N, *(self.n_base for _ in range(self.state_len)), self.n_base + 1
         scores = scores.reshape(*expand_dims)
@@ -140,6 +141,7 @@ class CTC_CRF(SequenceDist):
             self.state_len +2,
             self.state_len + 1).reshape(T, N, -1, self.n_base), [0, 2, 3]
         )
+        print("Finished reverse complement")
         return torch.cat([blanks, emissions], dim=-1).reshape(T, N, -1)
 
     def viterbi(self, scores):

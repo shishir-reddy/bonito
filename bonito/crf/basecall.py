@@ -29,7 +29,8 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     with torch.inference_mode():
         device = next(model.parameters()).device
         dtype = torch.float16 if half_supported() else torch.float32
-        scores = model(batch.to(dtype).to(device))
+        # scores = model(batch.to(dtype).to(device))
+        scores = model(batch.to(device))
         if reverse:
             scores = model.seqdist.reverse_complement(scores)
         sequence, qstring, moves = beam_search(
