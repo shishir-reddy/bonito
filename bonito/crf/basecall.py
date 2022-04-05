@@ -12,6 +12,7 @@ from bonito.util import chunk, stitch, batchify, unbatchify, half_supported
 
 import sys
 
+o = open("outfile.log", "w")
 
 def stitch_results(results, length, size, overlap, stride, reverse=False):
     """
@@ -36,16 +37,16 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         # scores = model(batch.to(dtype).to(device))
         scores = model(batch.to(device))
         if reverse:
-            print("Starting reverse complement", file=sys.stderr)
+            print("Starting reverse complement", file=o)
             scores = model.seqdist.reverse_complement(scores)
-            print("Completed reverse complement", file=sys.stderr)
+            print("Completed reverse complement", file=o)
         
-        print("Starting beam search", file=sys.stderr)
+        print("Starting beam search", file=o)
         sequence, qstring, moves = beam_search(
             scores, beam_width=beam_width, beam_cut=beam_cut,
             scale=scale, offset=offset, blank_score=blank_score
         )
-        print("Completed beam search", file=sys.stderr)
+        print("Completed beam search", file=o)
         return {
             'moves': moves,
             'qstring': qstring,
