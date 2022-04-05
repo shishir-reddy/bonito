@@ -9,6 +9,8 @@ from koi.decode import beam_search, to_str
 from bonito.multiprocessing import thread_iter
 from bonito.util import chunk, stitch, batchify, unbatchify, half_supported
 
+import sys
+
 
 def stitch_results(results, length, size, overlap, stride, reverse=False):
     """
@@ -32,11 +34,16 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         # scores = model(batch.to(dtype).to(device))
         scores = model(batch.to(device))
         if reverse:
+            sys.stderr.write("Starting reverse complement \n")
             scores = model.seqdist.reverse_complement(scores)
+            sys.stderr.write("Completed reverse complement \n")
+        
+        sys.stderr.write("Starting beam search \n")
         sequence, qstring, moves = beam_search(
             scores, beam_width=beam_width, beam_cut=beam_cut,
             scale=scale, offset=offset, blank_score=blank_score
         )
+        sys.stderr.write("Completed beam search \n")
         return {
             'moves': moves,
             'qstring': qstring,
