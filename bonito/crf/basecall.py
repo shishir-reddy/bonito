@@ -71,9 +71,9 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
         for read in reads
     )
 
-    print("Chunks", file=sys.stderr)
-    for read in reads:
-        print((read, 0, len(read.signal)), chunk(torch.from_numpy(read.signal), chunksize, overlap), file=sys.stderr)
+    # print("Chunks", file=sys.stderr)
+    # for read in reads:
+    #     print((read, 0, len(read.signal)), chunk(torch.from_numpy(read.signal), chunksize, overlap), file=sys.stderr)
 
     batches = thread_iter(batchify(chunks, batchsize=batchsize))
 
@@ -82,10 +82,10 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
         (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
     )
 
-    batches = thread_iter(batchify(chunks, batchsize=batchsize))
-    print("Scores", file=sys.stderr)
-    for read, batch in batches:
-        print(read, compute_scores(model, batch, reverse=reverse), file=sys.stderr)
+    # batches = thread_iter(batchify(chunks, batchsize=batchsize))
+    # print("Scores", file=sys.stderr)
+    # for read, batch in batches:
+    #     print(read, compute_scores(model, batch, reverse=reverse), file=sys.stderr)
 
     # print("Completed Scoring, scores: {}".format(scores), file=sys.stderr)
 
@@ -94,14 +94,9 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
         for ((read, start, end), scores) in unbatchify(scores)
     )
 
-
-    scores = thread_iter(
-        (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
-    )
-
     print("Results", file=sys.stderr)
-    for ((read, start, end), scores) in unbatchify(scores):
-        print(read, stitch_results(scores, end - start, chunksize, overlap, model.stride, reverse), file=sys.stderr)
+    for read, attrs in results:
+        print(read, fmt(model.stride, attrs), file=sys.stderr)
 
     return thread_iter(
         (read, fmt(model.stride, attrs))
