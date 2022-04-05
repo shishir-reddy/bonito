@@ -79,6 +79,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     )
     print("Completed Scoring, scores: {}".format(scores), file=sys.stderr)
 
+    print("Scores", file=sys.stderr)
     for ((read, start, end), scores) in unbatchify(scores):
         print((read, stitch_results(scores, end - start, chunksize, overlap, model.stride, reverse)), file=sys.stderr)
 
