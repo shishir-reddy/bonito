@@ -12,7 +12,7 @@ from bonito.util import chunk, stitch, batchify, unbatchify, half_supported
 
 import sys
 
-o = open("outfile.log", "w")
+o = open("/home/shishirizreddy/tpu-test/outfile.log", "w")
 
 def stitch_results(results, length, size, overlap, stride, reverse=False):
     """
@@ -30,6 +30,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     """
     Compute scores for model.
     """
+    print("Starting compute", file=o)
     with torch.inference_mode():
         # device = next(model.parameters()).device
         device = xm.xla_device()
@@ -84,9 +85,9 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     )
 
     # batches = thread_iter(batchify(chunks, batchsize=batchsize))
-    print("Scores", file=sys.stderr)
-    for read, batch in batches:
-        print(read, compute_scores(model, batch, reverse=reverse), file=sys.stderr)
+    # print("Scores", file=sys.stderr)
+    # for read, batch in batches:
+    #     print(read, compute_scores(model, batch, reverse=reverse), file=sys.stderr)
 
     # print("Completed Scoring, scores: {}".format(scores), file=sys.stderr)
 
