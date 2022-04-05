@@ -134,17 +134,16 @@ def main(args):
     if aligner:
         results = align_map(aligner, results, n_thread=args.alignment_threads)
 
-    sys.stderr.write("Starting write \n")
     writer = ResultsWriter(
         fmt.mode, tqdm(results, desc="> calling", unit=" reads", leave=False),
         aligner=aligner, group_key=args.model_directory,
         ref_fn=args.reference, groups=groups,
     )
-    sys.stderr.write("Completed write \n")
-
     t0 = perf_counter()
+    sys.stderr.write("Starting write \n")
     writer.start()
     writer.join()
+    sys.stderr.write("Completed write \n")
     duration = perf_counter() - t0
     num_samples = sum(num_samples for read_id, num_samples in writer.log)
 
