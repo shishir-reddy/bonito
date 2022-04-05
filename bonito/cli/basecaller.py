@@ -42,6 +42,7 @@ def main(args):
             quantize=args.quantize,
             use_koi=False,
         )
+        print("Model successfully loaded")
     except FileNotFoundError:
         sys.stderr.write(f"> error: failed to load {args.model_directory}\n")
         sys.stderr.write(f"> available models:\n")
