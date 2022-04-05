@@ -75,6 +75,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     scores = thread_iter(
         (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
     )
+    print("Completed Scoring", file=sys.stderr)
 
     results = thread_iter(
         (read, stitch_results(scores, end - start, chunksize, overlap, model.stride, reverse))
