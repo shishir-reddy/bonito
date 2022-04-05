@@ -84,6 +84,9 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
         for ((read, start, end), scores) in unbatchify(scores)
     )
 
+    for read, attrs in results:
+        print("{} {}".format(read, attrs), file=sys.stderr)
+
     return thread_iter(
         (read, fmt(model.stride, attrs))
         for read, attrs in results
