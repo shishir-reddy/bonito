@@ -39,8 +39,11 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     # dtype = torch.float16 if half_supported() else torch.float32
     # scores = model(batch.to(dtype).to(device))
     print("Sending Batch to Device", file=sys.stderr)
+    print("Batch", file=sys.stderr)
+    print(batch, file=sys.stderr)
     batch = batch.to(device)
-    
+    print("Batch after device", file=sys.stderr)
+    print(batch, file=sys.stderr)
     scores = model(batch)
     print("Sent batch to device and evaluated", file=sys.stderr)
     if reverse:
