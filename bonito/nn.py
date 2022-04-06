@@ -174,9 +174,9 @@ class RNNWrapper(Module):
         if disable_state_bias: self.disable_state_bias()
 
     def forward(self, x):
-        torch.set_printoptions(edgeitems=3, precision=torch.float32)
+        torch.set_printoptions(edgeitems=3)
         print(self.rnn, file=sys.stderr)
-        print(type(x), x, file=sys.stderr)
+        print(type(x), x.to(torch.float16), file=sys.stderr)
         if self.reverse: x = x.flip(0)
         y, h = self.rnn(x)
         if self.reverse: y = y.flip(0)
