@@ -94,6 +94,7 @@ class CTC_CRF(SequenceDist):
         return (scores - self.logZ(scores)[:, None] / len(scores))
 
     def forward_scores(self, scores, S: semiring=Log):
+        print("forwarding", file=sys.stderr)
         T, N, _ = scores.shape
         Ms = scores.reshape(T, N, -1, self.n_base + 1)
         v0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
