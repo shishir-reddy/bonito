@@ -12,7 +12,7 @@ from bonito.util import chunk, stitch, batchify, unbatchify, half_supported
 
 import sys
 
-o = open("/home/shishirizreddy/tpu-test/outfile.log", "w")
+# o = open("/home/shishirizreddy/tpu-test/outfile.log", "w")
 
 def stitch_results(results, length, size, overlap, stride, reverse=False):
     """
