@@ -107,10 +107,12 @@ def half_supported():
     """
     Returns whether FP16 is support on the GPU
     """
-    try:
-        return get_device_capability()[0] >= 7
-    except:
-        return False
+    # try:
+    #     return get_device_capability()[0] >= 7
+    # except:
+    #     return False
+
+    return True
 
 
 def phred(prob, scale=1.0, bias=0.0):
@@ -310,10 +312,10 @@ def load_model(dirname, device, weights=None, half=None, chunksize=None, batchsi
     # model.to(device)
     model.load_state_dict(new_state_dict)
 
-    if half is None:
-        half = half_supported()
+    # if half is None:
+    #     half = half_supported()
 
-    if half: model = model.half()
+    # if half: model = model.half()
     model.eval()
     model.to(device)
     sys.stderr.write("Successfully loaded model\n")
