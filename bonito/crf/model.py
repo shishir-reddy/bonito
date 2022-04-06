@@ -4,6 +4,7 @@ Bonito CTC-CRF Model.
 
 import torch
 import numpy as np
+import sys
 
 from koi.ctc import SequenceDist, Max, Log, semiring
 # from koi.ctc import logZ_cu, viterbi_alignments, logZ_cu_sparse, bwd_scores_cu_sparse, fwd_scores_cu_sparse
@@ -200,9 +201,9 @@ class CTC_CRF(SequenceDist):
 
 
 def conv(c_in, c_out, ks, stride=1, bias=False, activation=None):
-    print("Attempting Conv: {};{}".format(c_in,c_out))
+    print("Attempting Conv: {};{}".format(c_in,c_out), file=sys.stderr)
     o = Convolution(c_in, c_out, ks, stride=stride, padding=ks//2, bias=bias, activation=activation)
-    print("Conv Success")
+    print("Conv Success", file=sys.stderr)
     return o
     # return Convolution(c_in, c_out, ks, stride=stride, padding=ks//2, bias=bias, activation=activation)
 
@@ -231,9 +232,9 @@ class SeqdistModel(Module):
         self.alphabet = seqdist.alphabet
 
     def forward(self, x):
-        print("Attempting RNN encoder forward")
+        print("Attempting RNN encoder forward", file=sys.stderr)
         f = self.encoder(x)
-        print("Completed RNN encoder forward")
+        print("Completed RNN encoder forward", file=sys.stderr)
         return f
         # return self.encoder(x)
 
