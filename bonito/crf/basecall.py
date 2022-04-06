@@ -39,7 +39,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         # dtype = torch.float16 if half_supported() else torch.float32
         # scores = model(batch.to(dtype).to(device))
         print("Sending Batch to Device", file=sys.stderr)
-        scores = model(batch.to(device)).to(torch.float16)
+        scores = model(batch.to(torch.float16).to(device))
         print("Sent batch to device", file=sys.stderr)
         if reverse:
             print("Starting reverse complement", file=sys.stderr)
