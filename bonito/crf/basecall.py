@@ -30,8 +30,8 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     """
     Compute scores for model.
     """
-    o.write('This should be written')
-    print("Starting compute", file=o)
+    # o.write('This should be written')
+    # print("Starting compute", file=o)
     with torch.inference_mode():
         # device = next(model.parameters()).device
         device = xm.xla_device()
@@ -39,16 +39,16 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         # scores = model(batch.to(dtype).to(device))
         scores = model(batch.to(device)).to(torch.float16)
         if reverse:
-            print("Starting reverse complement", file=o)
+            # print("Starting reverse complement", file=o)
             scores = model.seqdist.reverse_complement(scores)
-            print("Completed reverse complement", file=o)
+            # print("Completed reverse complement", file=o)
         
-        print("Starting beam search", file=o)
+        # print("Starting beam search", file=o)
         sequence, qstring, moves = beam_search(
             scores, beam_width=beam_width, beam_cut=beam_cut,
             scale=scale, offset=offset, blank_score=blank_score
         )
-        print("Completed beam search", file=o)
+        # print("Completed beam search", file=o)
         return {
             'moves': moves,
             'qstring': qstring,
@@ -69,12 +69,12 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     """
     Basecalls a set of reads.
     """
-    print("This should be written", file=o)
+    # print("This should be written", file=o)
     chunks = thread_iter(
         ((read, 0, len(read.signal)), chunk(torch.from_numpy(read.signal), chunksize, overlap))
         for read in reads
     )
-    print(chunks, file=o)
+    # print(chunks, file=o)
 
     # print("Chunks", file=sys.stderr)
     # for read in reads:
@@ -103,7 +103,7 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     # for read, attrs in results:
     #     print(read, fmt(model.stride, attrs), file=sys.stderr)
 
-    o.write("This should be written22")
+    # o.write("This should be written22")
     return thread_iter(
         (read, fmt(model.stride, attrs))
         for read, attrs in results
