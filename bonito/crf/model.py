@@ -97,7 +97,7 @@ class CTC_CRF(SequenceDist):
         T, N, _ = scores.shape
         Ms = scores.reshape(T, N, -1, self.n_base + 1)
         v0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-        return scan(Ms, self.idx.to(torch.int64), v0, S)
+        return scan(Ms, self.idx.to(torch.int32), v0, S)
 
         # return fwd_scores_cu_sparse(Ms, self.idx, alpha_0, S, K=1)
 
@@ -107,7 +107,7 @@ class CTC_CRF(SequenceDist):
         idx_T = self.idx.flatten().argsort().reshape(*self.idx.shape)
         Ms_T = scores[:, :, idx_T]
         idx_T = torch.div(idx_T, self.n_base + 1, rounding_mode='floor')
-        return scan(Ms_T.flip(0), idx_T.to(torch.int64), vT, S).flip(0)
+        return scan(Ms_T.flip(0), idx_T.to(torch.int32), vT, S).flip(0)
 
         # return bwd_scores_cu_sparse(Ms, self.idx, beta_T, S, K=1)
 

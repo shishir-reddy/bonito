@@ -175,6 +175,7 @@ class RNNWrapper(Module):
         if disable_state_bias: self.disable_state_bias()
 
     def forward(self, x):
+        
         print(self.rnn, file=sys.stderr)
         if self.reverse: x = x.flip(0)
         y, h = self.rnn(x)
