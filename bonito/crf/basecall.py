@@ -31,13 +31,14 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     Compute scores for model.
     """
     # o.write('This should be written')
-    print("Starting compute", file=sys.stderr)
     with torch.inference_mode():
+        print("Starting compute", file=sys.stderr)
         # device = next(model.parameters()).device
         device = xm.xla_device()
         dtype = torch.float16 if half_supported() else torch.float32
         # scores = model(batch.to(dtype).to(device))
         scores = model(batch.to(device)).to(torch.float16)
+        print("Sent batch to device")
         if reverse:
             print("Starting reverse complement", file=sys.stderr)
             scores = model.seqdist.reverse_complement(scores)
