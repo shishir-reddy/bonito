@@ -31,34 +31,34 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     Compute scores for model.
     """
     # o.write('This should be written')
-    with torch.inference_mode():
-        print("Starting compute", file=sys.stderr)
-        device = next(model.parameters()).device
-        # device = xm.xla_device()
-        print(device, file=sys.stderr)
-        # dtype = torch.float16 if half_supported() else torch.float32
-        # scores = model(batch.to(dtype).to(device))
-        print("Sending Batch to Device", file=sys.stderr)
-        scores = model(batch.to(torch.float16).to(device))
-        print("Sent batch to device", file=sys.stderr)
-        if reverse:
-            print("Starting reverse complement", file=sys.stderr)
-            scores = model.seqdist.reverse_complement(scores)
-            print("Completed reverse complement", file=sys.stderr)
-        
-        print("Starting beam search", file=sys.stderr)
-        print(scores, file=sys.stderr)
-        sequence, qstring, moves = beam_search(
-            scores, beam_width=beam_width, beam_cut=beam_cut,
-            scale=scale, offset=offset, blank_score=blank_score
-        )
-        print("Completed beam search", file=sys.stderr)
-        print(sequence, qstring, moves, file=sys.stderr)
-        return {
-            'moves': moves,
-            'qstring': qstring,
-            'sequence': sequence,
-        }
+    # with torch.inference_mode():
+    print("Starting compute", file=sys.stderr)
+    device = next(model.parameters()).device
+    # device = xm.xla_device()
+    print(device, file=sys.stderr)
+    # dtype = torch.float16 if half_supported() else torch.float32
+    # scores = model(batch.to(dtype).to(device))
+    print("Sending Batch to Device", file=sys.stderr)
+    scores = model(batch.to(torch.float16).to(device))
+    print("Sent batch to device", file=sys.stderr)
+    if reverse:
+        print("Starting reverse complement", file=sys.stderr)
+        scores = model.seqdist.reverse_complement(scores)
+        print("Completed reverse complement", file=sys.stderr)
+    
+    print("Starting beam search", file=sys.stderr)
+    print(scores, file=sys.stderr)
+    sequence, qstring, moves = beam_search(
+        scores, beam_width=beam_width, beam_cut=beam_cut,
+        scale=scale, offset=offset, blank_score=blank_score
+    )
+    print("Completed beam search", file=sys.stderr)
+    print(sequence, qstring, moves, file=sys.stderr)
+    return {
+        'moves': moves,
+        'qstring': qstring,
+        'sequence': sequence,
+    }
 
 
 def fmt(stride, attrs):
