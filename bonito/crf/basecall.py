@@ -36,7 +36,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         device = next(model.parameters()).device
         # device = xm.xla_device()
         print(device, file=sys.stderr)
-        dtype = torch.float16 if half_supported() else torch.float32
+        # dtype = torch.float16 if half_supported() else torch.float32
         # scores = model(batch.to(dtype).to(device))
         print("Sending Batch to Device", file=sys.stderr)
         scores = model(batch.to(device)).to(torch.float16)
