@@ -31,7 +31,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     Compute scores for model.
     """
     # o.write('This should be written')
-    # print("Starting compute", file=o)
+    print("Starting compute", file=sys.stderr)
     with torch.inference_mode():
         # device = next(model.parameters()).device
         device = xm.xla_device()
@@ -81,6 +81,9 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     #     print((read, 0, len(read.signal)), chunk(torch.from_numpy(read.signal), chunksize, overlap), file=sys.stderr)
 
     batches = thread_iter(batchify(chunks, batchsize=batchsize))
+
+    for read, batch in batches:
+        print(read, compute_scores(model, batch, reverse=reverse), file=sys.stderr)
 
     # print("Scoring", file=sys.stderr)
     scores = thread_iter(
