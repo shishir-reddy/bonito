@@ -10,6 +10,8 @@ import sys
 
 layers = {}
 
+torch.set_printoptions(edgeitems=3)
+
 
 def register(layer):
     layer.name = layer.__name__.lower()
@@ -176,7 +178,7 @@ class RNNWrapper(Module):
 
     def forward(self, x):
         print(self.rnn, file=sys.stderr)
-        print(type(x), file=sys.stderr)
+        print(type(x), x, file=sys.stderr)
         if self.reverse: x = x.flip(0)
         y, h = self.rnn(x)
         if self.reverse: y = y.flip(0)
