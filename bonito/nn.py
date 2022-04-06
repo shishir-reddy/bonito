@@ -10,9 +10,6 @@ import sys
 
 layers = {}
 
-torch.set_printoptions(edgeitems=3)
-
-
 def register(layer):
     layer.name = layer.__name__.lower()
     layers[layer.name] = layer
@@ -177,6 +174,7 @@ class RNNWrapper(Module):
         if disable_state_bias: self.disable_state_bias()
 
     def forward(self, x):
+        torch.set_printoptions(edgeitems=3, precision=torch.float32)
         print(self.rnn, file=sys.stderr)
         print(type(x), x, file=sys.stderr)
         if self.reverse: x = x.flip(0)
