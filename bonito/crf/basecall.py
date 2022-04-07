@@ -6,7 +6,7 @@ import torch
 import torch_xla.core.xla_model as xm
 import numpy as np
 from koi.decode import beam_search, to_str
-from bonito.custom_koi import beam_search
+from bonito.custom_koi_decode import beam_search
 
 from bonito.multiprocessing import thread_iter
 from bonito.util import chunk, stitch, batchify, unbatchify, half_supported
