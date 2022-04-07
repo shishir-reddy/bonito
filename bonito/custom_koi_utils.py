@@ -1,5 +1,5 @@
 import torch
-from koi._runtime import ffi
+from koi.utils import ffi
 from collections import namedtuple
 
 
