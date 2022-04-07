@@ -52,7 +52,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         print("Completed reverse complement", file=sys.stderr)
     
     print("Starting beam search", file=sys.stderr)
-    print(scores, file=sys.stderr)
+    # print(scores, file=sys.stderr)
     sequence, qstring, moves = beam_search(
         scores, beam_width=beam_width, beam_cut=beam_cut,
         scale=scale, offset=offset, blank_score=blank_score
