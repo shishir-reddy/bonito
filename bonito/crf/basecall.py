@@ -39,11 +39,11 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     # dtype = torch.float16 if half_supported() else torch.float32
     # scores = model(batch.to(dtype).to(device))
     print("Sending Batch to Device", file=sys.stderr)
-    print("Batch", file=sys.stderr)
-    print(batch, file=sys.stderr)
+    # print("Batch", file=sys.stderr)
+    # print(batch, file=sys.stderr)
     batch = batch.to(device)
-    print("Batch after device", file=sys.stderr)
-    print(batch, file=sys.stderr)
+    # print("Batch after device", file=sys.stderr)
+    # print(batch, file=sys.stderr)
     scores = model(batch)
     print("Sent batch to device and evaluated", file=sys.stderr)
     if reverse:
@@ -92,8 +92,8 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
 
     batches = thread_iter(batchify(chunks, batchsize=batchsize))
 
-    for read, batch in batches:
-        print(read, compute_scores(model, batch, reverse=reverse), file=sys.stderr)
+    # for read, batch in batches:
+    #     print(read, compute_scores(model, batch, reverse=reverse), file=sys.stderr)
 
     # print("Scoring", file=sys.stderr)
     scores = thread_iter(
