@@ -12,8 +12,8 @@ def void_ptr(x):
     """
 
     # Try sending tensor to CPU first
-    return ffi.cast("void *", x.to(torch.device('cpu')).data_ptr())
-    # return ffi.cast("void *", x.data_ptr())
+    # return ffi.cast("void *", x.to(torch.device('cpu')).data_ptr())
+    return ffi.cast("void *", x.data_ptr())
 
 
 def empty(size, device, dtype=torch.float16):

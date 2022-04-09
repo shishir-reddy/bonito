@@ -5,7 +5,7 @@ Bonito CRF basecalling
 import torch
 import torch_xla.core.xla_model as xm
 import numpy as np
-from koi.decode import beam_search, to_str
+# from koi.decode import beam_search, to_str
 from bonito.custom_koi_decode import beam_search
 
 from bonito.multiprocessing import thread_iter
@@ -39,13 +39,13 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     print(device, file=sys.stderr)
     # dtype = torch.float16 if half_supported() else torch.float32
     # scores = model(batch.to(dtype).to(device))
-    print("Sending Batch to Device", file=sys.stderr)
+    print("Sending Batch to Device and evaluating", file=sys.stderr)
     # print("Batch", file=sys.stderr)
     # print(batch, file=sys.stderr)
-    batch = batch.to(device)
+    # batch = batch.to(device)
     # print("Batch after device", file=sys.stderr)
     # print(batch, file=sys.stderr)
-    scores = model(batch)
+    scores = model(batch.to(device))
     print("Sent batch to device and evaluated", file=sys.stderr)
     if reverse:
         print("Starting reverse complement", file=sys.stderr)
