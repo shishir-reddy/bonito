@@ -4,7 +4,9 @@ from bonito.custom_koi_utils import void_ptr, empty, zeros
 
 def beam_search(scores, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0, blank_score=2.0):
     # Try sending scores to cpu float16 from start
-    scores.to(torch.float16).to(torch.device('cpu'))
+    scores = scores.to(torch.float16)
+    scores.to(torch.device('cpu'))
+    scores = scores.to(torch.float16)
 
     if scores.dtype != torch.float16:
         raise TypeError('Expected fp16 but received %s' % scores.dtype)
