@@ -183,6 +183,7 @@ class RNNWrapper(Module):
         # print(type(x), x.to(torch.device('cpu')).to(torch.float16), file=sys.stderr)
         print(self.reverse, file=sys.stderr)
         if self.reverse: x = x.flip(0)
+        print(x.size(), file=sys.stderr)
         y, h = self.rnn(x)
         if self.reverse: y = y.flip(0)
         return y
