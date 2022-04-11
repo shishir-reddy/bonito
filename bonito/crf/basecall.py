@@ -6,6 +6,7 @@ import torch
 import torch_xla.core.xla_model as xm
 import numpy as np
 from crf_beam import beam_search
+import pickle
 # from koi.decode import beam_search, to_str
 # from bonito.custom_koi_decode import beam_search
 
@@ -91,6 +92,15 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     # print(batch, file=sys.stderr)
     print("Sent batch to device and evaluated", file=sys.stderr)
     scores = model(batch)
+
+    # Save scores for quicker processing
+    with open('scores.pickle', 'wb') as handle:
+        pickle.dump(scores, handle)
+    
+    # # Load scores
+    # with open('scores.pickle', 'rb') as handle:
+    #     scores = pickle.load(handle)
+
     fwd = model.seqdist.forward_scores(scores)
     bwd = model.seqdist.backward_scores(scores)
     posts = torch.softmax(fwd + bwd, dim=-1)
