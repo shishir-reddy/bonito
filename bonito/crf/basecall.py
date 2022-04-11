@@ -88,7 +88,9 @@ def compute_scores(model, batch):
     }
 
 def decode(x, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0, blank_score=2.0):
+    print("Attempting CPU beam search", file=sys.stderr)
     sequence, qstring, moves = beam_search(x['scores'], x['bwd'], x['posts'])
+    print("Completed CPU beam search", file=sys.stderr)
     return {
         'sequence': sequence,
         'qstring': qstring,
