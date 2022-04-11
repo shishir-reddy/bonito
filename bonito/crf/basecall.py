@@ -76,7 +76,7 @@ def stitch_results(results, length, size, overlap, stride, reverse=False):
 #     }
 
 # Try full CPU implementation of score computation from openvino module
-def compute_scores(model, batch):
+def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0, blank_score=2.0, reverse=False):
     scores = model(batch)
     fwd = model.seqdist.forward_scores(scores)
     bwd = model.seqdist.backward_scores(scores)
