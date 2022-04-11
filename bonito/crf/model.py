@@ -93,6 +93,18 @@ class CTC_CRF(SequenceDist):
         print("Normalizing scores")
         return (scores - self.logZ(scores)[:, None] / len(scores))
 
+    # def forward_scores(self, scores, S: semiring=Log):
+    #     T, N, _ = scores.shape
+    #     Ms = scores.reshape(T, N, -1, self.n_base + 1)
+    #     alpha_0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
+    #     return fwd_scores_cu_sparse(Ms, self.idx, alpha_0, S, K=1)
+
+    # def backward_scores(self, scores, S: semiring=Log):
+    #     T, N, _ = scores.shape
+    #     Ms = scores.reshape(T, N, -1, self.n_base + 1)
+    #     beta_T = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
+    #     return bwd_scores_cu_sparse(Ms, self.idx, beta_T, S, K=1)
+
     def forward_scores(self, scores, S: semiring=Log):
         print("forwarding", file=sys.stderr)
         T, N, _ = scores.shape
