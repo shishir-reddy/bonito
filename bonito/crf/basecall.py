@@ -91,13 +91,13 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     # print("Batch after device", file=sys.stderr)
     # print(batch, file=sys.stderr)
     print("Sent batch to device and evaluated", file=sys.stderr)
-    scores = model(batch)
+    # scores = model(batch)
 
     # Save scores for quicker processing
-    torch.save(scores.detach().cpu().numpy(), 'scores.pt')
+    # torch.save(scores.detach().cpu().numpy(), 'scores.pt')
     
     # Load scores
-    # scores = torch.load('scores.pt', map_location=device)
+    scores = torch.load('scores.pt', map_location=device)
 
     fwd = model.seqdist.forward_scores(scores)
     bwd = model.seqdist.backward_scores(scores)
