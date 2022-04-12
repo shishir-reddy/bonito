@@ -99,9 +99,14 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     # Load scores
     scores = torch.load('scores.pt', map_location=device)
 
+    print("Starting forward", file=sys.stderr)
     fwd = model.seqdist.forward_scores(scores)
+    print("Starting Backward", file=sys.stderr)
     bwd = model.seqdist.backward_scores(scores)
+
     posts = torch.softmax(fwd + bwd, dim=-1)
+
+    print("Completed scoring", file=sys.stderr)
     return {
         'scores': scores.transpose(0, 1),
         'bwd': bwd.transpose(0, 1),
