@@ -94,7 +94,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     scores = model(batch)
 
     # Save scores for quicker processing
-    torch.save(scores, 'scores.pt')
+    torch.save(scores.detach().numpy(), 'scores.pt')
     
     # Load scores
     # scores = torch.load('scores.pt', map_location=device)
