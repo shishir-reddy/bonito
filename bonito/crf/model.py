@@ -36,7 +36,7 @@ def scan(Ms, idx, v0, S:semiring=Log):
     alpha = Ms.new_full((T + 1, N, C), S.zero)
     alpha[0] = v0
     for t in range(T):
-        alpha[t+1] = S.sum(S.mul(Ms[t], alpha[t, :, idx]), dim=-1)
+        alpha[t+1] = S.sum(S.mul(Ms[t], alpha[t, :, idx.long()]), dim=-1)
     return alpha
 
 '''
