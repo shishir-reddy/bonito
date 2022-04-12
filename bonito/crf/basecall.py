@@ -97,7 +97,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     # torch.save(scores.detach().cpu().numpy(), 'scores.pt')
     
     # Load scores
-    scores = torch.load('scores.pt', map_location=device)
+    scores = torch.tensor(torch.load('scores.pt', map_location=device)).to(device)
 
     print("Starting forward", file=sys.stderr)
     fwd = model.seqdist.forward_scores(scores)
