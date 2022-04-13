@@ -114,7 +114,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     }
 
 def decode(x, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0, blank_score=2.0):
-    x.to(torch.device('cpu'))
+    print(x, file=sys.stderr)
     print("Attempting CPU beam search", file=sys.stderr)
     sequence, qstring, moves = beam_search(x['scores'], x['bwd'], x['posts'])
     print("Completed CPU beam search", file=sys.stderr)
