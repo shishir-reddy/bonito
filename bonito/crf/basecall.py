@@ -91,13 +91,13 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     # print("Batch after device", file=sys.stderr)
     # print(batch, file=sys.stderr)
     print("Sent batch to device and evaluated", file=sys.stderr)
-    # scores = model(batch)
+    scores = model(batch)
 
     # Save scores for quicker processing
     # torch.save(scores.detach().cpu().numpy(), 'scores.pt')
     
     # Load scores
-    scores = torch.tensor(torch.load('scores.pt', map_location=device)).to(device)
+    # scores = torch.tensor(torch.load('scores.pt', map_location=device)).to(device)
 
     print("Starting forward", file=sys.stderr)
     fwd = model.seqdist.forward_scores(scores)
@@ -114,7 +114,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     }
 
 def decode(x, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0, blank_score=2.0):
-    print(x, file=sys.stderr)
+    print(x, file= -sys.stderr)
     print("Attempting CPU beam search", file=sys.stderr)
     sequence, qstring, moves = beam_search(x['scores'], x['bwd'], x['posts'])
     print("Completed CPU beam search", file=sys.stderr)
@@ -148,6 +148,14 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     scores = thread_iter(
         (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
     )
+
+    print(type(scores), file=sys.stderr)
+
+    with open('scores.pickle', 'wb') as handle:
+        pickle.dump(scores, handle)
+
+    with open('scores.pickle', 'rb') as handle:
+        scores = pickle.load(scores, handle)
 
     # batches = thread_iter(batchify(chunks, batchsize=batchsize))
     # print("Scores", file=sys.stderr)
