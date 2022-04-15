@@ -152,10 +152,10 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32, reverse=Fa
     print(type(scores), file=sys.stderr)
 
     with open('scores.pickle', 'wb') as handle:
-        pickle.dump(scores, handle)
+        pickle.dump(list(scores), handle)
 
     with open('scores.pickle', 'rb') as handle:
-        scores = pickle.load(scores, handle)
+        scores = (score for score in pickle.load(handle))
 
     # batches = thread_iter(batchify(chunks, batchsize=batchsize))
     # print("Scores", file=sys.stderr)
