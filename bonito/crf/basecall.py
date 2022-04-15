@@ -87,6 +87,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     print("Sending Batch to Device", file=sys.stderr)
     # print("Batch", file=sys.stderr)
     # print(batch, file=sys.stderr)
+    batch = batch.to(torch.float32)
     batch = batch.to(device)
     # print("Batch after device", file=sys.stderr)
     # print(batch, file=sys.stderr)
