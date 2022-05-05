@@ -14,6 +14,7 @@ except ImportError:
 
 # import seqdist.sparse
 # from seqdist.ctc_simple import logZ_cupy, viterbi_alignments
+
 from seqdist.core import SequenceDist, Max, Log, semiring
 
 
