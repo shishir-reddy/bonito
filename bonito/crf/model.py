@@ -6,8 +6,14 @@ import torch
 import numpy as np
 from bonito.nn import Module, Convolution, LinearCRFEncoder, Serial, Permute, layers, from_dict
 
-import seqdist.sparse
-from seqdist.ctc_simple import logZ_cupy, viterbi_alignments
+try:
+    import seqdist.sparse
+    from seqdist.ctc_simple import logZ_cupy, viterbi_alignments
+except ImportError:
+    pass
+
+# import seqdist.sparse
+# from seqdist.ctc_simple import logZ_cupy, viterbi_alignments
 from seqdist.core import SequenceDist, Max, Log, semiring
 
 
