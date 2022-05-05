@@ -120,6 +120,7 @@ def main(args):
     else:
         ResultsWriter = Writer
 
+    print("Starting basecalling", file=sys.stderr)
     results = basecall(
         model, reads, reverse=args.revcomp,
         batchsize=model.config["basecaller"]["batchsize"],
