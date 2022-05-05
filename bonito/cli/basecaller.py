@@ -82,7 +82,7 @@ def main(args):
     elif args.reference and fmt.name == "fastq":
         sys.stderr.write(f"> warning: did you really want {fmt.aligned} {fmt.name}?\n")
     else:
-        sys.stderr.write(f"> outputting {fmt.aligned} {fmt.name}\n")
+        sys.stderr.write(f"> ooiutputting {fmt.aligned} {fmt.name}\n")
 
     if args.save_ctc and not args.reference:
         sys.stderr.write("> a reference is needed to output ctc training data\n")
