@@ -1,4 +1,5 @@
 import torch
+import torch_xla.core.xla_model as xm
 from crf_beam import beam_search
 from bonito.crf.basecall import stitch_results
 from bonito.multiprocessing import thread_iter, thread_map
@@ -7,6 +8,11 @@ from bonito.util import chunk, stitch, batchify, unbatchify
 import sys
 
 def compute_scores(model, batch):
+    print("Sending model to TPU", file=sys.stderr)
+    # Change device to TPU
+    device = xm.xla_device()
+
+    model.to(device)
     scores = model(batch)
     fwd = model.seqdist.forward_scores(scores)
     bwd = model.seqdist.backward_scores(scores)
